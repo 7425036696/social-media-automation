@@ -4,63 +4,67 @@ A powerful Node.js automation agent that fetches trending AI topics, generates e
 
 ## 🚀 Features
 
-- **Trend Detection**: Fetches trending AI topics from Google News, Reddit, and Hacker News
-- **AI Content Generation**: Uses Gemini 2.0 Flash for viral tweets and SEO-optimized blog posts
-- **Multi-Platform Publishing**: Automatically posts to Twitter/X and Hashnode
-- **Robust Error Handling**: Retry logic, rate limiting, and comprehensive logging
-- **Flexible Deployment**: Works on Vercel, Render, Railway, or GitHub Actions
-- **Extensible Architecture**: Easy to add new platforms (LinkedIn, Medium, etc.)
+-   **Trend Detection**: Fetches trending AI topics from Google News and Hacker News using the [`TrendingFetcher`](src/services/trendingFetcher.js) service.
+-   **AI Content Generation**: Uses Gemini 2.0 Flash via the [`ContentGenerator`](src/services/contentGenerator.js) service to create viral tweets and SEO-optimized blog posts.
+-   **Multi-Platform Publishing**: Automatically posts to Twitter/X (using [`TwitterPublisher`](src/services/twitterPublisher.js)) and Hashnode (using [`HashnodePublisher`](src/services/hashnodePublisher.js)).
+-   **Robust Error Handling**: Includes retry logic (using [`retryWrapper`](src/utils/helpers.js)), rate limiting, and comprehensive logging (using [`logger`](src/utils/logger.js)).
+-   **Flexible Deployment**: Works on Vercel, Render, Railway, or GitHub Actions.
+-   **Extensible Architecture**: Easy to add new platforms (LinkedIn, Medium, etc.).
 
 ## 📋 Prerequisites
 
-- Node.js 18+ 
-- API keys for the services you want to use (see setup section)
+-   Node.js 18+
+-   API keys for the services you want to use (see setup section)
 
 ## 🛠️ Installation
 
-1. **Clone or create the project:**
-```bash
-mkdir ai-content-agent
-cd ai-content-agent
-```
+1.  **Clone or create the project:**
 
-2. **Install dependencies:**
-```bash
-npm install
-```
+    ```bash
+    mkdir ai-content-agent
+    cd ai-content-agent
+    ```
+2.  **Install dependencies:**
 
-3. **Set up environment variables:**
-```bash
-cp .env.example .env
-```
+    ```bash
+    npm install
+    ```
+3.  **Set up environment variables:**
 
-4. **Configure your API keys** (see configuration section below)
+    ```bash
+    cp .env.example .env
+    ```
+4.  **Configure your API keys** (see configuration section below)
 
 ## ⚙️ Configuration
 
 ### Required API Keys
 
 #### 1. Gemini AI (Required)
-- Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-- Create a new API key
-- Add to `.env`: `GEMINI_API_KEY=your_key_here`
+
+-   Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+-   Create a new API key
+-   Add to `.env`: `GEMINI_API_KEY=your_key_here`
 
 #### 2. Twitter/X API (Optional)
-- Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
-- Create a new app with Read and Write permissions
-- Generate API keys and access tokens
-- Add to `.env`:
-```env
-TWITTER_API_KEY=your_api_key
-TWITTER_API_SECRET=your_api_secret
-TWITTER_ACCESS_TOKEN=your_access_token
-TWITTER_ACCESS_TOKEN_SECRET=your_access_token_secret
-```
+
+-   Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
+-   Create a new app with Read and Write permissions
+-   Generate API keys and access tokens
+-   Add to `.env`:
+
+    ```env
+    TWITTER_API_KEY=your_api_key
+    TWITTER_API_SECRET=your_api_secret
+    TWITTER_ACCESS_TOKEN=your_access_token
+    TWITTER_ACCESS_TOKEN_SECRET=your_access_token_secret
+    ```
 
 #### 3. Hashnode API (Optional)
-- Go to [Hashnode Settings > Developer](https://hashnode.com/settings/developer)
-- Generate a new API token
-- Add to `.env`: `HASHNODE_API_TOKEN=your_token_here`
+
+-   Go to [Hashnode Settings > Developer](https://hashnode.com/settings/developer)
+-   Generate a new API token
+-   Add to `.env`: `HASHNODE_API_TOKEN=your_token_here`
 
 ### Environment Variables
 
@@ -88,6 +92,7 @@ PORT=3000
 ## 🚀 Usage
 
 ### Development
+
 ```bash
 # Run once
 npm run start -- --once
@@ -100,6 +105,7 @@ npm start
 ```
 
 ### Testing Individual Services
+
 ```bash
 # Test content generation
 node -e "
@@ -121,79 +127,84 @@ await publisher.testTweet();
 
 ### 1. Vercel (Recommended for Serverless)
 
-1. **Install Vercel CLI:**
-```bash
-npm install -g vercel
-```
+1.  **Install Vercel CLI:**
 
-2. **Create `vercel.json`:**
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "src/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "src/index.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "0 */6 * * *"
-    }
-  ]
-}
-```
+    ```bash
+    npm install -g vercel
+    ```
 
-3. **Deploy:**
-```bash
-vercel --prod
-```
+2.  **Create `vercel.json`:**
 
-4. **Set environment variables in Vercel dashboard**
+    ```json
+    {
+      "version": 2,
+      "builds": [
+        {
+          "src": "src/index.js",
+          "use": "@vercel/node"
+        }
+      ],
+      "routes": [
+        {
+          "src": "/(.*)",
+          "dest": "src/index.js"
+        }
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "crons": [
+        {
+          "path": "/api/cron",
+          "schedule": "0 */6 * * *"
+        }
+      ]
+    }
+    ```
+
+3.  **Deploy:**
+
+    ```bash
+    vercel --prod
+    ```
+
+4.  **Set environment variables in Vercel dashboard**
 
 ### 2. Render (Recommended for Always-On Service)
 
-1. **Connect your GitHub repository to Render**
+1.  **Connect your GitHub repository to Render**
 
-2. **Create `render.yaml`:**
-```yaml
-services:
-  - type: web
-    name: ai-content-agent
-    env: node
-    buildCommand: npm install
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: TWITTER_API_KEY
-        sync: false
-      # Add other env vars...
-```
+2.  **Create `render.yaml`:**
 
-3. **Deploy and add environment variables in Render dashboard**
+    ```yaml
+    services:
+      - type: web
+        name: ai-content-agent
+        env: node
+        buildCommand: npm install
+        startCommand: npm start
+        envVars:
+          - key: NODE_ENV
+            value: production
+          - key: GEMINI_API_KEY
+            sync: false
+          - key: TWITTER_API_KEY
+            sync: false
+          # Add other env vars...
+    ```
+
+3.  **Deploy and add environment variables in Render dashboard**
 
 ### 3. Railway
 
-1. **Connect GitHub repository**
-2. **Add environment variables in Railway dashboard**
-3. **Railway will auto-deploy on push**
+1.  **Connect GitHub repository**
+2.  **Add environment variables in Railway dashboard**
+3.  **Railway will auto-deploy on push**
 
 ### 4. GitHub Actions (Scheduled)
 
 Create `.github/workflows/content-automation.yml`:
+
 ```yaml
 name: AI Content Automation
 
@@ -254,39 +265,43 @@ ai-content-agent/
 
 ### Adding New Platforms
 
-1. **Create a new publisher service:**
-```javascript
-// src/services/linkedinPublisher.js
-export class LinkedInPublisher {
-  async publishPost(content) {
-    // Implementation
-  }
-}
-```
+1.  **Create a new publisher service:**
 
-2. **Add to main automation:**
-```javascript
-// src/index.js
-import { LinkedInPublisher } from './services/linkedinPublisher.js';
+    ```javascript
+    // src/services/linkedinPublisher.js
+    export class LinkedInPublisher {
+      async publishPost(content) {
+        // Implementation
+      }
+    }
+    ```
 
-class AIContentAgent {
-  constructor() {
-    // Add new publisher
-    this.linkedinPublisher = new LinkedInPublisher();
-  }
-}
-```
+2.  **Add to main automation:**
+
+    ```javascript
+    // src/index.js
+    import { LinkedInPublisher } from './services/linkedinPublisher.js';
+
+    class AIContentAgent {
+      constructor() {
+        // Add new publisher
+        this.linkedinPublisher = new LinkedInPublisher();
+      }
+    }
+    ```
 
 ### Custom Content Templates
 
 Modify `src/services/contentGenerator.js` to customize:
-- Tweet templates and hashtags
-- Blog post structure and SEO keywords
-- Content tone and style
+
+-   Tweet templates and hashtags
+-   Blog post structure and SEO keywords
+-   Content tone and style
 
 ### Scheduling Options
 
 Change the cron schedule in `src/index.js`:
+
 ```javascript
 // Every 3 hours
 cron.schedule('0 */3 * * *', ...)
@@ -301,58 +316,66 @@ cron.schedule('0 */6 * * 1-5', ...)
 ## 📊 Monitoring & Logs
 
 ### Log Levels
-- `error`: Critical errors only
-- `warn`: Warnings and errors
-- `info`: General information (recommended)
-- `debug`: Detailed debugging info
+
+-   `error`: Critical errors only
+-   `warn`: Warnings and errors
+-   `info`: General information (recommended)
+-   `debug`: Detailed debugging info
 
 ### Production Logs
+
 Logs are saved to `logs/` directory in production:
-- `error.log`: Error logs only
-- `combined.log`: All logs
+
+-   `error.log`: Error logs only
+-   `combined.log`: All logs
 
 ### Health Check
+
 The app exposes a health check endpoint on `/health` for monitoring services.
 
 ## 🛡️ Security Best Practices
 
-1. **Never commit API keys** - Use environment variables
-2. **Use environment-specific configs** - Different keys for dev/prod
-3. **Enable rate limiting** - Respect API limits
-4. **Monitor logs** - Watch for suspicious activity
-5. **Regular key rotation** - Update API keys periodically
+1.  **Never commit API keys** - Use environment variables
+2.  **Use environment-specific configs** - Different keys for dev/prod
+3.  **Enable rate limiting** - Respect API limits
+4.  **Monitor logs** - Watch for suspicious activity
+5.  **Regular key rotation** - Update API keys periodically
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
 **Gemini API Errors:**
-- Check API key validity
-- Ensure you have credits/quota available
-- Verify model name is correct (`gemini-2.0-flash-exp`)
+
+-   Check API key validity
+-   Ensure you have credits/quota available
+-   Verify model name is correct (`gemini-2.0-flash-exp`)
 
 **Twitter API Issues:**
-- Verify app permissions (Read and Write)
-- Check rate limits
-- Ensure access tokens are not expired
+
+-   Verify app permissions (Read and Write)
+-   Check rate limits
+-   Ensure access tokens are not expired
 
 **Hashnode Publishing Fails:**
-- Verify API token is valid
-- Check if you have a publication set up
-- Ensure content meets Hashnode's requirements
+
+-   Verify API token is valid
+-   Check if you have a publication set up
+-   Ensure content meets Hashnode's requirements
 
 ### Debug Mode
+
 ```bash
 LOG_LEVEL=debug npm start
 ```
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+1.  Fork the repository
+2.  Create a feature branch
+3.  Make your changes
+4.  Add tests if applicable
+5.  Submit a pull request
 
 ## 📝 License
 
@@ -360,24 +383,22 @@ MIT License - feel free to use for personal or commercial projects.
 
 ## 🚨 Rate Limits & Best Practices
 
-- **Twitter**: 300 tweets per 3-hour window
-- **Gemini**: 1500 requests per day (free tier)
-- **Hashnode**: No official limits, but be reasonable
+-   **Twitter**: 300 tweets per 3-hour window
+-   **Gemini**: 1500 requests per day (free tier)
+-   **Hashnode**: No official limits, but be reasonable
 
 The agent includes built-in rate limiting and retry logic to stay within these limits.
 
 ## 🎯 Future Enhancements
 
-- [ ] LinkedIn publishing
-- [ ] Medium integration
-- [ ] Image generation for posts
-- [ ] Analytics and performance tracking
-- [ ] Custom RSS feed sources
-- [ ] Content scheduling and queuing
-- [ ] A/B testing for different content styles
+-   [ ] LinkedIn publishing
+-   [ ] Medium integration
+-   [ ] Image generation for posts
+-   [ ] Analytics and performance tracking
+-   [ ] Custom RSS feed sources
+-   [ ] Content scheduling and queuing
+-   [ ] A/B testing for different content styles
 
 ---
 
-🚀 **Ready to automate your AI content?** Set up your API keys and let the agent do the work!#   s o c i a l - m e d i a - a u t o m a t i o n 
- 
- 
+🚀 **Ready to automate your AI content?** Set up your API keys and let the agent do the work!#
